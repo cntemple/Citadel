@@ -78,6 +78,7 @@ namespace CryptoNote {
     Crypto::Hash getTailId();
     Crypto::Hash getTailId(uint32_t& height);
     difficulty_type getDifficultyForNextBlock();
+    uint64_t getBlockTimestamp(uint32_t height);
     uint64_t getCoinsInCirculation();
     uint8_t get_block_major_version_for_height(uint64_t height) const;
     bool addNewBlock(const Block& bl_, block_verification_context& bvc);
@@ -256,7 +257,8 @@ namespace CryptoNote {
     CryptoNote::DepositIndex m_depositIndex;
     TransactionMap m_transactionMap;
     MultisignatureOutputsContainer m_multisignatureOutputs;
-    UpgradeDetector m_upgradeDetector;
+	UpgradeDetector m_upgradeDetectorV2;
+	UpgradeDetector m_upgradeDetectorV3;
 
     PaymentIdIndex m_paymentIdIndex;
     TimestampBlocksIndex m_timestampIndex;

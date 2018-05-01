@@ -1,3 +1,9 @@
+Release notes 3.1.0-beta
+
+- Messages 2.0 core support
+- Messages API for simplewallet
+- Basic access authentication
+
 Release notes 0.1.0
 
 - New industrial type wallet for services: walletd

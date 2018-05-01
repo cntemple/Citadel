@@ -10,6 +10,7 @@
 #include "../CryptoNoteConfig.h"
 #include "../Common/CommandLine.h"
 #include "../Common/Util.h"
+#include "../Common/Math.h"
 #include "../Common/StringTools.h"
 #include "../crypto/crypto.h"
 #include "../CryptoNoteProtocol/CryptoNoteProtocolDefinitions.h"
@@ -316,14 +317,31 @@ bool core::get_block_template(Block& b, const AccountPublicAddress& adr, difficu
     b = boost::value_initialized<Block>();
     b.majorVersion = m_blockchain.get_block_major_version_for_height(height);
 
-    if (BLOCK_MAJOR_VERSION_1 == b.majorVersion) {
-      b.minorVersion = BLOCK_MINOR_VERSION_1;
-    } else if (BLOCK_MAJOR_VERSION_2 == b.majorVersion) {
+    if (b.majorVersion < BLOCK_MAJOR_VERSION_3) {
+      if (b.majorVersion == BLOCK_MAJOR_VERSION_1) {
+        b.minorVersion = m_currency.upgradeHeight(BLOCK_MAJOR_VERSION_2) == UpgradeDetectorBase::UNDEF_HEIGHT ? BLOCK_MINOR_VERSION_1 : BLOCK_MINOR_VERSION_0;
+      } else {
+        b.minorVersion = m_currency.upgradeHeight(BLOCK_MAJOR_VERSION_3) == UpgradeDetectorBase::UNDEF_HEIGHT ? BLOCK_MINOR_VERSION_1 : BLOCK_MINOR_VERSION_0;
+      }
+    } else {
       b.minorVersion = BLOCK_MINOR_VERSION_0;
-    }
+	}
 
     b.previousBlockHash = get_tail_id();
     b.timestamp = time(NULL);
+
+    // Don't generate a block template with invalid timestamp
+    // Fix by Jagerman - https://github.com/graft-project/GraftNetwork/pull/118/commits
+    if(height >= m_currency.timestampCheckWindow()) {
+      std::vector<uint64_t> timestamps;
+      for(size_t offset = height - m_currency.timestampCheckWindow(); offset < height; ++offset) {
+        timestamps.push_back(m_blockchain.getBlockTimestamp(offset));
+      }
+      uint64_t median_ts = Common::medianValue(timestamps);
+      if (b.timestamp < median_ts) {
+          b.timestamp = median_ts;
+      }
+    }
 
     median_size = m_blockchain.getCurrentCumulativeBlocksizeLimit() / 2;
     already_generated_coins = m_blockchain.getCoinsInCirculation();

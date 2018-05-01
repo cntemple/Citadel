@@ -75,7 +75,7 @@ namespace CryptoNote {
       const CryptoNote::Currency& currency, 
       CryptoNote::ITransactionValidator& validator,
       CryptoNote::ITimeProvider& timeProvider,
-      Logging::ILogger& log);
+	  Logging::ILogger& log);
 
     bool addObserver(ITxPoolObserver* observer);
     bool removeObserver(ITxPoolObserver* observer);
@@ -203,6 +203,7 @@ namespace CryptoNote {
 
     PaymentIdIndex m_paymentIdIndex;
     TimestampTransactionsIndex m_timestampIndex;
+    std::unordered_map<Crypto::Hash, uint64_t> m_ttlIndex;
   };
 }
 

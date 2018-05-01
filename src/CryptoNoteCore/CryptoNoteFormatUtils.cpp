@@ -75,6 +75,7 @@ bool constructTransaction(
   const std::vector<TransactionSourceEntry>& sources,
   const std::vector<TransactionDestinationEntry>& destinations,
   const std::vector<tx_message_entry>& messages,
+  uint64_t ttl,
   std::vector<uint8_t> extra,
   Transaction& tx,
   uint64_t unlock_time,
@@ -195,6 +196,10 @@ bool constructTransaction(
     if (!append_message_to_extra(tx.extra, tag)) {
       return false;
     }
+  }
+
+  if (ttl != 0) {
+    appendTTLToExtra(tx.extra, ttl);
   }
 
   //generate ring signatures
@@ -479,7 +484,7 @@ bool get_block_longhash(cn_context &context, const Block& b, Hash& res) {
     return false;
   }
 
-  cn_slow_hash(context, bd.data(), bd.size(), res);
+  cn_slow_hash(context, bd.data(), bd.size(), res, b.majorVersion >= 3 ? 1 : 0);
   return true;
 }
 
